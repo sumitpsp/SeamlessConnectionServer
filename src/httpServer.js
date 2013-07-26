@@ -7,5 +7,4 @@ http.createServer(function(request, response) {
         response.writeHead(200, {'Content-Type': 'text'});
         response.write(ip + ' ' + port);
         response.end();
-}).listen(25000);
-~                 
+}).listen(10005);

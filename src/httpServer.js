@@ -1,4 +1,4 @@
-var http = require('http)
+var http = require('http')
 
 http.createServer(function(request, response) {
         var ip = request.connection.remoteAddress;

@@ -65,12 +65,13 @@ int main(int argc, char* argv[])
    // for rendezvous connection, enable the code below
    /*
    UDT::setsockopt(client, 0, UDT_RENDEZVOUS, new bool(true), sizeof(bool));
-   if (UDT::ERROR == UDT::bind(client, local->ai_addr, local->ai_addrlen))
+  */
+	 if (UDT::ERROR == UDT::bind(client, local->ai_addr, local->ai_addrlen))
    {
       cout << "bind: " << UDT::getlasterror().getErrorMessage() << endl;
       return 0;
    }
-   */
+
 
    freeaddrinfo(local);
 

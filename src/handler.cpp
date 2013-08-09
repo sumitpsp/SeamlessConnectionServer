@@ -3,8 +3,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <netdb.h>
+#include <sql.h>
 
 #include "handler.h"
+#include "messages.h"
 
 #define PORT "11111"
 
@@ -66,16 +68,96 @@ int SConnect::start_listener() {
 	UDT::close(udt_server);
 }
 
-void* SConnect::handler(void *incoming) {
+int recv_size(UDTSOCKET incoming, char *data, int size) {
+	int rs = 0, rsize = 0;
+	while(rsize < size) {
+		if(UDT::ERROR ==(rs = UDT::recv(incoming, data + rsize, size - rsize, 0))) {
+            cout << "Receive Error:" << UDT::getlasterror().getErrorMessage() <<endl;
+            break;
+        }       
+        rsize+=rs;
+	}
+
+	
+	return rsize;
+}
+
+int send_size(UDTSOCKET socket, char* buffer, int size) {
+	
+}
+
+int SConnect::find_initiator_info(char* payload) {
+	cout<<"Finding Initiator Info for" << endl;
+	
+	return 0;
+}
+
+int SConnect::find_peer_info(char* payload) {
+	cout << "Finding ip info for" << endl;
+	int ip_length = 0;
+	memcpy(&ip_length, payload, sizeof(ip_length));
+	cout << "Ip Length is "<< ip_length<< endl;
+	payload+=sizeof(ip_length);
+	char* ip = (char*) malloc(ip_length);
+	memcpy(ip, payload, ip_length);
+	cout <<" Ip is " << ip << endl;
+	payload+=ip_length;
+	int port = 0;
+	memcpy(&port, payload, sizeof(port));
+	cout << "Port is " << endl;
+	payload+=sizeof(port);
+	
+	int name_length = 0;
+	memcpy(&name_length, payload, sizeof(name_length));
+	payload+=sizeof(name_length);
+	cout << "Name Length is "<< name_length << endl;
+	
+	char* name = (char*) malloc(name_length);
+	memcpy(name, payload, name_length);	
+	
+	return 0;
+}
+int SConnect::get_payload_type(char *payload) {
+	int type = 0;
+	memcpy(&type, payload, sizeof(type));
+	payload+=sizeof(type);
+	if(type == REPORTIP) {
+		find_initiator_info(payload);
+	}
+	else if(type == PEERINFO) {
+		find_peer_info(payload);
+	}
+
+	return 0;
+}
+
+int SConnect::handle_payload(char* payload) {
+	int type = get_payload_type(payload);
+}
+
+
+void* SConnect::handler(void *socket) {
 	cout << "In Handler Thread"<<endl;
+
+	UDTSOCKET incoming = *(UDTSOCKET*) socket;
+	
+	int payload_size = 0;
+
+	int result = recv_size(incoming, (char*) &payload_size, sizeof(int)); 
+	cout << "Size received is " << payload_size<< endl;
+	
+	char* payload = (char*) malloc(payload_size);
+	result = recv_size(incoming, payload, payload_size);
+
+	SConnect::handle_payload(payload);
 
 }
 
 
 int main() {
 	UDTUpDown _udt_;
-
+	SDBHandler* db = new SDBHandler();
+	//db->connect_to_db();
 	SConnect* obj = new SConnect();
 	obj->start_listener();
-	
 } 
